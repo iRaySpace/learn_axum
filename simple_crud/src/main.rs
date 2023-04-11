@@ -35,11 +35,17 @@ struct CreateTask {
 }
 
 async fn tasks_create(State(db): State<Db>, Json(input): Json<CreateTask>) -> impl IntoResponse {
-    let tasks_len = db.read().unwrap().len();
+    let tasks = db.read().unwrap();
     let task = Task {
-        id: tasks_len as u64,
+        id: tasks.len() as u64,
         text: input.text,
     };
+
+    // это необходимо для того, чтобы
+    // освободить захваченный мьютекс RwLockReadGuard
+    // и разрешить другим потокам получить доступ к данным
+    drop(tasks);
+
     db.write().unwrap().insert(task.id, task.clone());
     (StatusCode::CREATED, Json(task))
 }
