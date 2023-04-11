@@ -35,9 +35,9 @@ struct CreateTask {
 }
 
 async fn tasks_create(State(db): State<Db>, Json(input): Json<CreateTask>) -> impl IntoResponse {
-    let tasks = db.read().unwrap();
+    let tasks_len = db.read().unwrap().len();
     let task = Task {
-        id: tasks.len() as u64,
+        id: tasks_len as u64,
         text: input.text,
     };
     db.write().unwrap().insert(task.id, task.clone());
